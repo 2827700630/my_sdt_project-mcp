@@ -1,0 +1,10 @@
+--- a/drivers/gpu/drm/xilinx/xlnx_hdcp.c
++++ b/drivers/gpu/drm/xilinx/xlnx_hdcp.c
+@@ -23,6 +23,7 @@
+ #include <linux/device.h>
+ #include <linux/errno.h>
+ #include <linux/kernel.h>
++#include <linux/slab.h>
+ #include <linux/module.h>
+ #include <linux/platform_device.h>
+ #include <drm/drm_print.h>

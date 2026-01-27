@@ -1,0 +1,103 @@
+/include/ "system-conf.dtsi"
+
+/ {
+    model = "rehsd Zynq-7000 Board";
+    compatible = "rehsd,zynq-7000", "xlnx,zynq-7000";
+
+    chosen {
+        bootargs = "console=ttyPS0,115200 earlyprintk root=/dev/mmcblk0p2 rw rootwait uio_pdrv_genirq.of_id=generic-uio cma=128M video=HDMI-A-1:1280x720-32@60,e";
+    };
+
+    reserved-memory {
+        #address-cells = <1>;
+        #size-cells = <1>;
+        ranges;
+
+        linux,cma {
+            compatible = "shared-dma-pool";
+            reusable;
+            size = <0x08000000>;
+            linux,cma-default;
+        };
+    };
+
+    usb_phy0: phy0@e0002000 {
+        compatible = "ulpi-phy";
+        #phy-cells = <0>;
+        reg = <0xe0002000 0x1000>;
+        view-port = <0x0170>;
+        drv-vbus;
+    };
+
+    fixed_panel: panel {
+        compatible = "panel-timing";
+        panel-timing {
+            clock-frequency = <74250000>;
+            hactive = <1280>;
+            vactive = <720>;
+            hfront-porch = <110>;
+            hsync-len = <40>;
+            hback-porch = <220>;
+            vfront-porch = <5>;
+            vsync-len = <5>;
+            vback-porch = <20>;
+            hsync-active = <0>;
+            vsync-active = <0>;
+        };
+        port {
+            panel_in: endpoint {
+                remote-endpoint = <&pl_disp_ep>;
+            };
+        };
+    };
+
+    xlnx_pl_disp: xlnx_pl_disp {
+        compatible = "xlnx,pl-disp";
+        dmas = <&DISP_DMA 0>;
+        dma-names = "dma0";
+        xlnx,vformat = "AR24"; 
+        xlnx,bridge = <&DISP_VTC>;
+        ports {
+            #address-cells = <1>;
+            #size-cells = <0>;
+            port@0 {
+                reg = <0>;
+                pl_disp_ep: endpoint { remote-endpoint = <&panel_in>; };
+            };
+        };
+    };
+};
+
+&amba_pl {
+    /* Manually restating properties to ensure node survival and proper labeling */
+    DISP_DMA: v_frmbuf_rd@43c10000 {
+        compatible = "xlnx,v-frmbuf-rd-3.0", "xlnx,axi-frmbuf-rd-v2.2";
+        reg = <0x43c10000 0x10000>;
+        status = "okay";
+        #dma-cells = <1>;
+    };
+
+    DISP_VTC: v_tc_0@43c20000 {
+        compatible = "xlnx,v-tc-6.2", "xlnx,bridge-v-tc-6.1";
+        reg = <0x43c20000 0x10000>;
+        status = "okay";
+        clocks = <&DISP_CLK 0>, <&clkc 15>;
+        clock-names = "clk", "s_axi_aclk";
+    };
+
+    DISP_CLK: clk_wiz@43c00000 {
+        /* Keep original compatible if possible, but defining reg is critical */
+        reg = <0x43c00000 0x10000>;
+        status = "okay";
+        #clock-cells = <1>;
+    };
+};
+
+&usb0 {
+    dr_mode = "otg";
+    usb-phy = <&usb_phy0>;
+};
+
+&sdhci0 {
+    u-boot,dm-pre-reloc;
+};

@@ -1,0 +1,131 @@
+/include/ "system-conf.dtsi"
+
+/ {
+    chosen {
+        bootargs = "console=ttyPS0,115200 earlycon root=/dev/mmcblk0p2 rw rootwait cma=64M video=HDMI-A-1:1280x720-32@60,e clk_ignore_unused";
+    };
+
+    usb_phy0: usb_phy0 {
+        compatible = "usb-nop-xceiv";
+        #phy-cells = <0>;
+    };
+
+    /* HDMI 显示管道主节点 */
+    pl_disp: pl_disp {
+        compatible = "xlnx,pl-disp";
+        clocks = <&clk_wiz_0 0>;
+        clock-names = "clk_pixel";
+        
+        dmas = <&v_frmbuf_rd_0 0>;
+        dma-names = "dma0";
+        
+        xlnx,bridge = <&v_tc_0>;
+        
+        xlnx,connector-type = "hdmi";
+        xlnx,vformat = "XR24"; /* 使用 XR24 (XRGB8888) 格式，解决控制台兼容性 */
+        xlnx,pixels-per-clock = <1>;
+
+        /* 参考旧方案：直接在节点内部塞入时序，这是解决“无信号”最稳的方法 */
+        display-timings {
+            native-mode = <&timing_720p>;
+            timing_720p: 1280x720 {
+                clock-frequency = <74250000>;
+                hactive = <1280>;
+                vactive = <720>;
+                hfront-porch = <110>;
+                hsync-len = <40>;
+                hback-porch = <220>;
+                vfront-porch = <5>;
+                vsync-len = <5>;
+                vback-porch = <20>;
+                hsync-active = <0>;
+                vsync-active = <0>;
+                de-active = <1>;
+                pixelclk-active = <1>;
+            };
+        };
+
+        /* 使用 ports 连接连接器 */
+        ports {
+            #address-cells = <1>;
+            #size-cells = <0>;
+            
+            port@0 {
+                reg = <0>;
+                pl_disp_out: endpoint {
+                    remote-endpoint = <&hdmi_con_in>;
+                };
+            };
+        };
+    };
+
+    /* HDMI 连接器：代替 panel 节点，兼容性更好 */
+    hdmi_con: connector {
+        compatible = "hdmi-connector";
+        label = "hdmi-out";
+        type = "a";
+
+        /* 强制拉高检测引脚 */
+        hpd-gpios = <&gpio0 54 0>; 
+
+        port {
+            hdmi_con_in: endpoint {
+                remote-endpoint = <&pl_disp_out>;
+            };
+        };
+    };
+};
+
+&v_tc_0 {
+    compatible = "xlnx,v-tc-6.2", "xlnx,v-tc-6.1", "xlnx,bridge-v-tc-6.1";
+    xlnx,pixels-per-clock = <1>;
+    status = "okay";
+};
+
+&v_frmbuf_rd_0 {
+    compatible = "xlnx,v-frmbuf-rd-3.0", "xlnx,axi-frmbuf-rd-v2.2";
+    xlnx,vid-formats = "xrgb8888", "argb8888";
+
+    /* 必须保留 reset-gpios 以通过驱动检查，但指向无冲突的引脚 (MIO 0) */
+    reset-gpios = <&gpio0 0 1>; 
+    
+    clocks = <&clkc 15>;
+    clock-names = "ap_clk"; 
+    
+    interrupt-parent = <&intc>;
+    interrupts = <0 29 4>; 
+};
+
+/* 核心修复2：将 FCLK0 标记为必须保持开启 */
+&clkc {
+    fclk-enable = <0x1>; /* Enable FCLK0 */
+};
+
+&clk_wiz_0 {
+    /* 修正兼容性字符串，加入官方推荐的 -v 版本 */
+    compatible = "xlnx,clocking-wizard-v6.0", "xlnx,clocking-wizard";
+    reg = <0x43c00000 0x10000>;
+    clocks = <&clkc 15>, <&clkc 15>;
+    clock-names = "clk_in1", "s_axi_aclk";
+    
+    #clock-cells = <1>;
+    
+    /* 补充驱动强制要求的属性 */
+    xlnx,speed-grade = <1>;    /* Zynq-7010 通常为 1 */
+    xlnx,nr-outputs = <1>;      /* 您的设计中通常只用了 clk_out1 提供像素时钟 */
+    
+    status = "okay";
+};
+
+&usb0 {
+    status = "okay";
+    dr_mode = "host";
+    usb-phy = <&usb_phy0>;
+};
+
+&sdhci0 {
+    status = "okay";
+    disable-wp;
+    no-1-8-v;
+};
+

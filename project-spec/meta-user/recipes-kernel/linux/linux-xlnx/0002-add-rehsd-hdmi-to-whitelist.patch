@@ -1,0 +1,9 @@
+--- a/drivers/gpu/drm/xlnx/xlnx_drv.c
++++ b/drivers/gpu/drm/xlnx/xlnx_drv.c
+@@ -324,5 +324,6 @@
+ 	"xlnx,vpss-scaler",
+ 	"xlnx,vpss-scaler-2.2",
+ 	"xlnx,sdi-tx",
+ 	"xlnx,bridge-v-tc-6.1",
++	"rehsd,hdmi",
+ };

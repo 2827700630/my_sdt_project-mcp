@@ -1,0 +1,18 @@
+menu "user packages " 
+config clk-dglnt-dynclk  
+	 bool "clk-dglnt-dynclk"
+	 help
+	
+config gpio-demo  
+	 bool "gpio-demo"
+	 help
+	
+config peekpoke  
+	 bool "peekpoke"
+	 help
+	
+config rehsd-hdmi  
+	 bool "rehsd-hdmi"
+	 help
+	
+endmenu

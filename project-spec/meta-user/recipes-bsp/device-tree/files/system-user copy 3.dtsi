@@ -1,0 +1,126 @@
+/include/ "system-conf.dtsi"
+
+/ {
+    chosen {
+        bootargs = "console=ttyPS0,115200 earlycon root=/dev/mmcblk0p2 rw rootwait cma=256M video=HDMI-A-1:1280x720M-32@60 clk_ignore_unused";
+    };
+
+    reserved-memory {
+        #address-cells = <1>;
+        #size-cells = <1>;
+        ranges;
+
+        framebuffer0: framebuffer@20000000 {
+            reg = <0x20000000 0x01000000>; // 16MB
+            /* 移除 no-map 以允许内核建立虚拟映射，解决 "Framebuffer is not in virtual address space" */
+        };
+    };
+
+    usb_phy0: usb_phy0 {
+        compatible = "usb-nop-xceiv";
+        #phy-cells = <0>;
+    };
+};
+
+&amba_pl {
+    /* HDMI Encoder node */
+    rehsd_hdmi: rehsd_hdmi {
+        compatible = "rehsd,hdmi";
+        clocks = <&clk_wiz_0 0>;
+        clock-names = "clk";
+        status = "okay";
+
+        rehsd,fmax = <150000>;
+        rehsd,hmax = <1280>;
+        rehsd,vmax = <720>;
+        rehsd,hpref = <1280>;
+        rehsd,vpref = <720>;
+
+        ports {
+            #address-cells = <1>;
+            #size-cells = <0>;
+            port@0 {
+                reg = <0>;
+                rehsd_hdmi_in: endpoint {
+                    remote-endpoint = <&pl_disp_out>;
+                };
+            };
+        };
+    };
+
+    /* Display Controller node */
+    pl_disp: pl_disp {
+        compatible = "xlnx,pl-disp";
+        /* 同时提供 xlnx,bridge 和 xlnx,vtc 以兼容不同版本的 Xilinx 驱动 */
+        xlnx,bridge = <&v_tc_0>;
+        xlnx,vtc = <&v_tc_0>;
+        device-id = <0xaa01>;
+        
+        clocks = <&clk_wiz_0 0>;
+        clock-names = "clk_pixel";
+
+        dmas = <&v_frmbuf_rd_0 0>;
+        dma-names = "dma0";
+        
+        xlnx,vformat = "XR24";
+        xlnx,pixels-per-clock = <1>;
+        status = "okay";
+
+        ports {
+            #address-cells = <1>;
+            #size-cells = <0>;
+            /* Port 0: 必须是输出端口 (连接到 HDMI) */
+            port@0 {
+                reg = <0>;
+                pl_disp_out: endpoint {
+                    remote-endpoint = <&rehsd_hdmi_in>;
+                };
+            };
+        };
+    };
+};
+
+&v_tc_0 {
+    compatible = "xlnx,v-tc-6.2", "xlnx,v-tc-6.1", "xlnx,bridge-v-tc-6.1"; 
+    clocks = <&clkc 15>, <&clk_wiz_0 0>;
+    clock-names = "s_axi_aclk", "clk";
+    xlnx,pixels-per-clock = <1>;
+    status = "okay";
+};
+
+&v_frmbuf_rd_0 {
+    compatible = "xlnx,v-frmbuf-rd-3.0", "xlnx,axi-frmbuf-rd-v2.2";
+    xlnx,vid-formats = "xrgb8888", "argb8888";
+    memory-region = <&framebuffer0>;
+    reset-gpios = <&gpio0 0 1>; 
+    status = "okay";
+    /* 移除 ports 块，DMA 不需要 graph 节点 */
+};
+
+
+&clkc {
+    fclk-enable = <0x1>;
+};
+
+&clk_wiz_0 {
+    compatible = "xlnx,clocking-wizard-v6.0", "xlnx,clocking-wizard";
+    reg = <0x43c00000 0x10000>;
+    clocks = <&clkc 15>, <&clkc 15>;
+    clock-names = "clk_in1", "s_axi_aclk";
+    #clock-cells = <1>;
+    xlnx,speed-grade = <1>;
+    xlnx,nr-outputs = <1>;
+    status = "okay";
+};
+
+&usb0 {
+    status = "okay";
+    dr_mode = "host";
+    usb-phy = <&usb_phy0>;
+};
+
+&sdhci0 {
+    status = "okay";
+    disable-wp;
+    no-1-8-v;
+};

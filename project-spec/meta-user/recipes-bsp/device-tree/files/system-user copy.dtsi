@@ -1,0 +1,129 @@
+/include/ "system-conf.dtsi"
+
+/ {
+    chosen {
+        bootargs = "console=ttyPS0,115200 earlycon root=/dev/mmcblk0p2 rw rootwait cma=256M video=HDMI-A-1:1280x720-32@60,e clk_ignore_unused";
+    };
+
+    usb_phy0: usb_phy0 {
+        compatible = "usb-nop-xceiv";
+        #phy-cells = <0>;
+    };
+};
+
+&amba_pl {
+    /* 将节点移入 amba_pl，并重命名为 rehsd_hdmi 以匹配参考项目 */
+    rehsd_hdmi: rehsd_hdmi {
+        compatible = "rehsd,hdmi", "xlnx,v-hdmi-tx-ss-1.0";
+        clocks = <&clk_wiz_0 0>;
+        clock-names = "clk";
+        status = "okay";
+
+        /* 强制 720p 分辨率参数 */
+        rehsd,fmax = <150000>;
+        rehsd,hmax = <1280>;
+        rehsd,vmax = <720>;
+        rehsd,hpref = <1280>;
+        rehsd,vpref = <720>;
+
+        ports {
+            #address-cells = <1>;
+            #size-cells = <0>;
+            port@0 {
+                reg = <0>;
+                rehsd_hdmi_in: endpoint {
+                    /* 直接接收来自 PL 显示控制器的信号 */
+                    remote-endpoint = <&pl_disp_out>;
+                };
+            };
+        };
+    };
+
+    /* 确保控制器在这个总线下 */
+    pl_disp: pl_disp {
+        compatible = "xlnx,pl-disp";
+        xlnx,vtc = <&v_tc_0>;
+        xlnx,v-tc = <&v_tc_0>;
+        clocks = <&clk_wiz_0 0>;
+        clock-names = "clk_pixel";
+        
+        dmas = <&v_frmbuf_rd_0 0>;
+        dma-names = "dma0";
+        
+        xlnx,vformat = "XR24";
+        xlnx,pixels-per-clock = <1>;
+        status = "okay";
+
+        ports {
+            #address-cells = <1>;
+            #size-cells = <0>;
+            /* Port 0: 视频源输入 (连接到 DMA) */
+            port@0 {
+                reg = <0>;
+                pl_disp_in: endpoint {
+                    remote-endpoint = <&v_frmbuf_rd_out>;
+                };
+            };
+            /* Port 1: 视频信号输出 (直接向 HDMI 驱动) */
+            port@1 {
+                reg = <1>;
+                pl_disp_out: endpoint {
+                    /* 跳过 VTC 组件等待，直接连接到 HDMI 桥接器 */
+                    remote-endpoint = <&rehsd_hdmi_in>;
+                };
+            };
+        };
+    };
+};
+
+&v_tc_0 {
+    compatible = "xlnx,v-tc-6.2", "xlnx,v-tc-6.1";
+    xlnx,pixels-per-clock = <1>;
+    status = "okay";
+    /* 移除 ports 引用，让 VTC 作为一个自动运行的桥接器，不再参与组件强制绑定 */
+};
+
+&v_frmbuf_rd_0 {
+    compatible = "xlnx,v-frmbuf-rd-3.0", "xlnx,axi-frmbuf-rd-v2.2";
+    xlnx,vid-formats = "xrgb8888", "argb8888";
+    reset-gpios = <&gpio0 0 1>; 
+    status = "okay";
+
+    ports {
+        #address-cells = <1>;
+        #size-cells = <0>;
+        port@0 {
+            reg = <0>;
+            v_frmbuf_rd_out: endpoint {
+                remote-endpoint = <&pl_disp_in>;
+            };
+        };
+    };
+};
+
+&clkc {
+    fclk-enable = <0x1>;
+};
+
+&clk_wiz_0 {
+    compatible = "xlnx,clocking-wizard-v6.0", "xlnx,clocking-wizard";
+    reg = <0x43c00000 0x10000>;
+    clocks = <&clkc 15>, <&clkc 15>;
+    clock-names = "clk_in1", "s_axi_aclk";
+    #clock-cells = <1>;
+    xlnx,speed-grade = <1>;
+    xlnx,nr-outputs = <1>;
+    status = "okay";
+};
+
+&usb0 {
+    status = "okay";
+    dr_mode = "host";
+    usb-phy = <&usb_phy0>;
+};
+
+&sdhci0 {
+    status = "okay";
+    disable-wp;
+    no-1-8-v;
+};

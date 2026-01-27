@@ -1,0 +1,84 @@
+/include/ "system-conf.dtsi"
+
+/ {
+    chosen {
+        bootargs = "console=ttyPS0,115200 earlycon root=/dev/mmcblk0p2 rw rootwait cma=64M video=HDMI-A-1:1280x720-32@60,e clk_ignore_unused";
+    };
+
+    usb_phy0: usb_phy0 {
+        compatible = "usb-nop-xceiv";
+        #phy-cells = <0>;
+    };
+
+    /* HDMI 显示管道主节点 */
+    pl_disp: pl_disp {
+        compatible = "xlnx,pl-disp";
+        clocks = <&clk_wiz_0 0>;
+        clock-names = "clk_pixel";
+        
+        dmas = <&v_frmbuf_rd_0 0>;
+        dma-names = "dma0";
+        
+        xlnx,bridge = <&v_tc_0>;
+        
+        xlnx,connector-type = "hdmi";
+        xlnx,vformat = "XR24"; /* 使用 XR24 (XRGB8888) 格式，解决控制台兼容性 */
+        xlnx,pixels-per-clock = <1>;
+    };
+};
+
+&v_tc_0 {
+    compatible = "xlnx,v-tc-6.2", "xlnx,v-tc-6.1", "xlnx,bridge-v-tc-6.1";
+    xlnx,pixels-per-clock = <1>;
+    status = "okay";
+};
+
+&v_frmbuf_rd_0 {
+    /* 参考 rehsd，增加多版本兼容性 */
+    compatible = "xlnx,v-frmbuf-rd-3.0", "xlnx,axi-frmbuf-rd-v2.2";
+
+    /* 显式声明硬件支持的格式，解决 DRM 匹配问题 */
+    xlnx,vid-formats = "xrgb8888", "argb8888";
+
+    /* 尝试将复位改为低电平有效 (1)，这是 Xilinx IP 的默认习惯 */
+    reset-gpios = <&gpio0 54 1>; 
+    
+    clocks = <&clkc 15>;
+    clock-names = "ap_clk"; 
+    
+    interrupt-parent = <&intc>;
+    interrupts = <0 29 4>; 
+};
+
+/* 核心修复2：将 FCLK0 标记为必须保持开启 */
+&clkc {
+    fclk-enable = <0x1>; /* Enable FCLK0 */
+};
+
+&clk_wiz_0 {
+    /* 修正兼容性字符串，加入官方推荐的 -v 版本 */
+    compatible = "xlnx,clocking-wizard-v6.0", "xlnx,clocking-wizard";
+    reg = <0x43c00000 0x10000>;
+    clocks = <&clkc 15>, <&clkc 15>;
+    clock-names = "clk_in1", "s_axi_aclk";
+    
+    #clock-cells = <1>;
+    
+    /* 补充驱动强制要求的属性 */
+    xlnx,speed-grade = <1>;    /* Zynq-7010 通常为 1 */
+    xlnx,nr-outputs = <1>;      /* 您的设计中通常只用了 clk_out1 提供像素时钟 */
+    
+    status = "okay";
+};
+
+&usb0 {
+    status = "okay";
+    dr_mode = "host";
+    usb-phy = <&usb_phy0>;
+};
+
+&sdhci0 {
+    status = "okay";
+    disable-wp;
+    no-1-8-v;
+};

@@ -2,30 +2,7 @@
 
 / {
     chosen {
-        bootargs = "console=ttyPS0,115200 earlycon root=/dev/mmcblk0p2 rw rootwait cma=256M video=HDMI-A-1:1280x720M-32@60 clk_ignore_unused";
-    };
-
-    reserved-memory {
-        #address-cells = <1>;
-        #size-cells = <1>;
-        ranges;
-
-        /* 使用与 rehsd 项目一致的三个 8MB framebuffer 节点并保留 no-map。
-         * 这有助于对照测试和兼容驱动期望。 */
-        framebuffer0: framebuffer0@20000000 {
-            reg = <0x20000000 0x00800000>; // 8MB
-            no-map;
-        };
-
-        framebuffer1: framebuffer1@20800000 {
-            reg = <0x20800000 0x00800000>; // 8MB
-            no-map;
-        };
-
-        framebuffer2: framebuffer2@21000000 {
-            reg = <0x21000000 0x00800000>; // 8MB
-            no-map;
-        };
+        bootargs = "console=ttyPS0,115200 earlycon root=/dev/mmcblk0p2 rw rootwait cma=256M video=HDMI-A-1:1280x720M-32@60 ";
     };
 
     usb_phy0: usb_phy0 {
@@ -38,7 +15,7 @@
     /* HDMI Encoder node */
     rehsd_hdmi: rehsd_hdmi {
         compatible = "rehsd,hdmi";
-        clocks = <&clk_wiz_0 0>;
+        clocks = <&clkc 15>;
         clock-names = "clk";
         status = "okay";
 
@@ -48,107 +25,61 @@
         rehsd,hpref = <1280>;
         rehsd,vpref = <720>;
 
-        ports {
-            #address-cells = <1>;
-            #size-cells = <0>;
-            port@0 {
-                reg = <0>;
-                rehsd_hdmi_in: endpoint {
-                    remote-endpoint = <&pl_disp_out>;
-                    /* 强制 hot-plug，避免没有 EDID 时设备不能输出 */
-                    hdmi,force-hot-plug = <1>;
-                };
-            };
-        };
+        rehsd,edid-i2c = <&i2c0>;
+
+		port@0 { 
+            reg = <0>;
+			hdmi_ep0: endpoint { 
+				remote-endpoint = <&pl_disp0_ep>; 
+				hdmi,force-hot-plug = <1>;
+			}; 
+		}; 
     };
 
-    /* Display Controller node */
-    pl_disp: pl_disp {
-        compatible = "xlnx,pl-disp";
-        /* 同时提供 xlnx,bridge 和 xlnx,vtc 以兼容不同版本的 Xilinx 驱动 */
-        xlnx,bridge = <&v_tc_0>;
-        xlnx,vtc = <&v_tc_0>;
-        device-id = <0xaa01>;
-        
-        clocks = <&clk_wiz_0 0>;
-        clock-names = "clk_pixel";
-
-        dmas = <&v_frmbuf_rd_0 0>;
-        dma-names = "dma0";
-        
-        xlnx,vformat = "XR24";
-        xlnx,pixels-per-clock = <1>;
-
-        status = "okay";
-
-        display-timings {
-            native-mode = <&timing720p>;
-
-            timing720p: timing-1280x720 {
-                hactive = <1280>;
-                vactive = <720>;
-                hsync-len = <40>;
-                hback-porch = <220>;
-                hfront-porch = <110>;
-                vsync-len = <5>;
-                vback-porch = <20>;
-                vfront-porch = <5>;
-                clock-frequency = <74250000>;
-                hsync-active = <0>;
-                vsync-active = <0>;
-                de-active = <1>;
-                pixelclk-active = <1>;
-                xlnx,bpp = <32>;
-            };
-        };
-
-        ports {
-            #address-cells = <1>;
-            #size-cells = <0>;
-            /* Port 0: 必须是输出端口 (连接到 HDMI) */
-            port@0 {
-                reg = <0>;
-                pl_disp_out: endpoint {
-                    remote-endpoint = <&rehsd_hdmi_in>;
-                };
-            };
-        };
-    };
-};
-
-&v_tc_0 {
-    compatible = "xlnx,v-tc-6.2", "xlnx,v-tc-6.1", "xlnx,bridge-v-tc-6.1"; 
-    clocks = <&clkc 15>, <&clk_wiz_0 0>;
-    clock-names = "s_axi_aclk", "clk";
-    xlnx,pixels-per-clock = <1>;
-    interrupt-names = "irq";
-    interrupt-parent = <&intc>;
-    interrupts = <0 30 4>;
-    status = "okay";
+   	xlnx_pl_disp0 {
+		compatible = "xlnx,pl-disp";
+		device-id = <0xaa01>;
+		dmas = <&v_frmbuf_rd_0 0>; 	
+		dma-names = "dma0"; 
+		xlnx,vformat = "XR24";		//XR24
+		xlnx,bridge = <&v_tc_0>; 
+		status = "okay";
+		port@0 { 
+            reg = <0>;
+			pl_disp0_ep: endpoint { 
+				remote-endpoint = <&hdmi_ep0>; 
+			}; 
+		};
+	};
 };
 
 &v_frmbuf_rd_0 {
-    compatible = "xlnx,v-frmbuf-rd-v3.0", "xlnx,axi-frmbuf-rd-v2.2";
-    xlnx,vid-formats = "xrgb8888", "argb8888";
-    memory-region = <&framebuffer0>;
-    /* Use PS reset controller (xlnx,zynq-reset). #reset-cells = <1>, use index 0 */
-    resets = <&rstc 0>;
-    reset-names = "srst";
-    interrupt-names = "interrupt";
-    interrupt-parent = <&intc>;
-    interrupts = <0 29 4>;
-
-    /* Capability/limits copied from working rehsd configuration */
-    xlnx,dma-align = <8>;
-    xlnx,dma-addr-width = <32>;
-    xlnx,max-height = <720>;
-    xlnx,max-width = <1280>;
-    xlnx,pixels-per-clock = <1>;
-
-    status = "okay";
-    /* 移除 ports 块，DMA 不需要 graph 节点 */
+	// #dma-cells = <1>;
+	// memory-region = <&framebuffer0>;
+	clock-names = "ap_clk";
+	clocks = <&clkc 15>;
+	compatible = "xlnx,v-frmbuf-rd-v3.0";
+	reg = <0x43c10000 0x10000>;      // Base address and size
+    reset-gpios = <&gpio0 0 1>;
+	// gpio-names = "reset";		//"reset"
+	// interrupt-names = "interrupt";
+	// interrupt-parent = <&intc>;
+	interrupts = <0 29 4>;          // Interrupts configuration
+	xlnx,dma-align = <8>;
+	xlnx,dma-addr-width = <32>;     // Width of the DMA address
+	xlnx,max-height = <1440>;        // Maximum vertical resolution
+	xlnx,max-width = <2560>;        // Maximum horizontal resolution
+	xlnx,pixels-per-clock = <1>;    // Pixels per clock cycle
+	xlnx,vid-formats = "rgb888", "bgr888";
+	// status = "okay";                // Enable the node
 };
 
+&v_tc_0 {
+	compatible = "xlnx,v-tc-6.2" , "xlnx,v-tc-6.1" , "xlnx,bridge-v-tc-6.1";
+	xlnx,pixels-per-clock = <1>; 
+	// reg = <0x43c20000 0x10000>;
+	// status = "okay";
+};
 
 &clkc {
     fclk-enable = <0x1>;
@@ -157,22 +88,18 @@
 &clk_wiz_0 {
     compatible = "xlnx,clocking-wizard-v6.0", "xlnx,clocking-wizard";
     reg = <0x43c00000 0x10000>;
+    #clock-cells = <1>;
     clocks = <&clkc 15>, <&clkc 15>;
     clock-names = "clk_in1", "s_axi_aclk";
-    #clock-cells = <1>;
+    /* Outputs defined according to Vivado BD: clk_pixel = clk_out1, Serial_Clock = clk_out2 */
+    clock-output-names = "clk_pixel", "Serial_Clock";
     xlnx,speed-grade = <1>;
-    xlnx,nr-outputs = <1>;
+    // xlnx,nr-outputs = <2>;
     status = "okay";
 };
 
 &usb0 {
-    status = "okay";
-    dr_mode = "host";
+    dr_mode = "otg";
     usb-phy = <&usb_phy0>;
 };
 
-&sdhci0 {
-    status = "okay";
-    disable-wp;
-    no-1-8-v;
-};

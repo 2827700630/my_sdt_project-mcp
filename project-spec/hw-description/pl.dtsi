@@ -4,7 +4,7 @@
 		compatible = "simple-bus";
 		#address-cells = <1>;
 		#size-cells = <1>;
-		firmware-name = "HDMI3.bit.bin";
+		firmware-name = "HDMI4.bit.bin";
 		clocking1: clocking1 {
 			compatible = "xlnx,fclk";
 			assigned-clocks = <&clkc 16>;

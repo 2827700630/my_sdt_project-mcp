@@ -128,7 +128,7 @@
 };
 
 &v_frmbuf_rd_0 {
-    compatible = "xlnx,v-frmbuf-rd-3.0", "xlnx,axi-frmbuf-rd-v2.2";
+    compatible = "xlnx,v-frmbuf-rd-v3.0", "xlnx,axi-frmbuf-rd-v2.2";
     xlnx,vid-formats = "xrgb8888", "argb8888";
     memory-region = <&framebuffer0>;
     /* Use PS reset controller (xlnx,zynq-reset). #reset-cells = <1>, use index 0 */

@@ -14,7 +14,7 @@
 &amba_pl {
     /* HDMI Encoder node */
     rehsd_hdmi: rehsd_hdmi {
-        compatible = "rehsd,hdmi";
+        compatible = "rehsd,hdmi", "xlnx,v-hdmi-tx-ss-1.0";
         clocks = <&clkc 15>;
         clock-names = "clk";
         status = "okay";
@@ -41,7 +41,7 @@
 		device-id = <0xaa01>;
 		dmas = <&v_frmbuf_rd_0 0>; 	
 		dma-names = "dma0"; 
-		xlnx,vformat = "XR24";		//XR24
+		xlnx,vformat = "RG24";		//Rg24
 		xlnx,bridge = <&v_tc_0>; 
 		status = "okay";
 		port@0 { 
@@ -58,9 +58,9 @@
 	// memory-region = <&framebuffer0>;
 	clock-names = "ap_clk";
 	clocks = <&clkc 15>;
-	compatible = "xlnx,v-frmbuf-rd-v3.0";
+	compatible = "xlnx,v-frmbuf-rd-v3.0", "xlnx,axi-frmbuf-rd-v2.2";
 	reg = <0x43c10000 0x10000>;      // Base address and size
-    reset-gpios = <&gpio0 0 1>;
+    reset-gpios = <&gpio0 54 1>;
 	// gpio-names = "reset";		//"reset"
 	// interrupt-names = "interrupt";
 	// interrupt-parent = <&intc>;
@@ -102,4 +102,3 @@
     dr_mode = "otg";
     usb-phy = <&usb_phy0>;
 };
-

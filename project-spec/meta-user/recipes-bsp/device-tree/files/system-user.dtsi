@@ -105,7 +105,7 @@
     clock-output-names = "clk_pixel", "Serial_Clock";
     //assigned-clocks = <&clk_wiz_0 0>, <&clk_wiz_0 1>;
     //assigned-clock-rates = <74250000>, <371250000>;    // out1=74.25MHz，out2=371.25MHz
-    //clock-accuracy = <100>; // 单位ppm（百万分比），覆盖驱动“零偏差”默认值
+    clock-accuracy = <5000>; // 单位ppm（百万分比），覆盖驱动“零偏差”默认值
     xlnx,speed-grade = <1>;
     status = "okay";
 };

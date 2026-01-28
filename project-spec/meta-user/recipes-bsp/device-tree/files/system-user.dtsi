@@ -30,7 +30,7 @@
         clock-names = "clk";
         status = "okay";
 
-        rehsd,edid-i2c = <&i2c0>;
+        // rehsd,edid-i2c = <&i2c0>;
 
 		port@0 { 
             // reg = <0>;
@@ -81,10 +81,13 @@
 };
 
 &v_tc_0 {
-	compatible = "xlnx,v-tc-6.2" , "xlnx,v-tc-6.1" , "xlnx,bridge-v-tc-6.1";
-	xlnx,pixels-per-clock = <1>; 
-	reg = <0x43c20000 0x10000>;
-	status = "okay";
+    compatible = "xlnx,bridge-v-tc-6.1";
+    reg = <0x43c20000 0x10000>;
+    clock-names = "s_axi_aclk", "clk";
+    clocks = <&clkc 15>, <&clk_wiz_0 0>;  // AXI 时钟和视频时钟
+    xlnx,pixels-per-clock = <1>;  // 已存在，匹配 HDMI 720p
+    xlnx,arbitrary-res-en;  // 可选，启用任意分辨率
+    status = "okay";
 };
 
 &clkc {

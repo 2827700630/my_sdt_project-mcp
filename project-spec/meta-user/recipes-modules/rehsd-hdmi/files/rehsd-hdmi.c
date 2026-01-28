@@ -132,8 +132,10 @@ static enum drm_connector_status rehsd_hdmi_detect(struct drm_connector *connect
 
 	if (!hdmi->i2c_bus)
 	{
-		dev_dbg(hdmi->dev, "[%s] No i2c bus, return connector_status_unknown\n", __func__);
-		return connector_status_unknown;
+		dev_dbg(hdmi->dev, "[%s] No i2c bus, return assume connector_status_connected\n", __func__);
+
+		//return connector_status_unknown;
+		return connector_status_connected;  // 修改为直接返回已连接，便于测试
 	}
 
 	status = drm_probe_ddc(hdmi->i2c_bus) ? connector_status_connected : connector_status_disconnected;

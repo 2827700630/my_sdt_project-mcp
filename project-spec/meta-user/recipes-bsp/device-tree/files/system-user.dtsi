@@ -30,7 +30,7 @@
         clock-names = "clk";
         status = "okay";
 
-        // rehsd,edid-i2c = <&i2c0>;
+        rehsd,edid-i2c = <&i2c0>;
 
 		port@0 { 
             // reg = <0>;
@@ -98,9 +98,12 @@
     clocks = <&clkc 15>, <&clkc 15>;
     clock-names = "clk_in1", "s_axi_aclk";
     /* Outputs defined according to Vivado BD: clk_pixel = clk_out1, Serial_Clock = clk_out2 */
+    xlnx,nr-outputs = <2>;
     clock-output-names = "clk_pixel", "Serial_Clock";
+    //assigned-clocks = <&clk_wiz_0 0>, <&clk_wiz_0 1>;
+    //assigned-clock-rates = <74250000>, <371250000>;    // out1=74.25MHz，out2=371.25MHz
+    //clock-accuracy = <100>; // 单位ppm（百万分比），覆盖驱动“零偏差”默认值
     xlnx,speed-grade = <1>;
-    // xlnx,nr-outputs = <2>;
     status = "okay";
 };
 

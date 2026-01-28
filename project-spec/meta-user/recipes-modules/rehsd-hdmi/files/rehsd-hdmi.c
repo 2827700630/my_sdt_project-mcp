@@ -211,7 +211,7 @@ static void rehsd_hdmi_atomic_mode_set(struct drm_encoder *encoder,
 		return;
 	}
 
-	//ret = clk_set_rate(hdmi->clk, target_rate);
+	ret = clk_set_rate(hdmi->clk, target_rate);//这个可能有问题
 	if (ret)
 	{
 		dev_err(hdmi->dev, "[%s] Failed to set clk rate to %lu Hz, ret=%d\n",

@@ -26,7 +26,7 @@
     /* HDMI Encoder node */
     rehsd_hdmi: rehsd_hdmi {
         compatible = "rehsd,hdmi", "xlnx,v-hdmi-tx-ss-1.0";
-        clocks = <&clk_wiz_0 0>;
+        clocks = <&misc_clk_0>;
         clock-names = "clk";
         status = "okay";
 
@@ -84,7 +84,7 @@
     compatible = "xlnx,bridge-v-tc-6.1";
     reg = <0x43c20000 0x10000>;
     clock-names = "s_axi_aclk", "clk";
-    clocks = <&clkc 15>, <&clk_wiz_0 0>;  // AXI 时钟和视频时钟
+    clocks = <&clkc 15>, <&misc_clk_0>;  // AXI 时钟和视频时钟
     xlnx,pixels-per-clock = <1>;  // 已存在，匹配 HDMI 720p
     xlnx,arbitrary-res-en;  // 可选，启用任意分辨率
     status = "okay";
@@ -105,7 +105,7 @@
     clock-output-names = "clk_pixel", "Serial_Clock";
     //assigned-clocks = <&clk_wiz_0 0>, <&clk_wiz_0 1>;
     //assigned-clock-rates = <74250000>, <371250000>;    // out1=74.25MHz，out2=371.25MHz
-    clock-accuracy = <5000>; // 单位ppm（百万分比），覆盖驱动“零偏差”默认值
+    //clock-accuracy = <5000>; // 单位ppm（百万分比），覆盖驱动“零偏差”默认值
     xlnx,speed-grade = <1>;
     status = "okay";
 };

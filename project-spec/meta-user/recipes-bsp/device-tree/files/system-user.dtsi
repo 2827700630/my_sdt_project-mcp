@@ -19,58 +19,43 @@
         compatible = "usb-nop-xceiv";
         #phy-cells = <0>;
     };
+
 };
 
 &amba_pl {
-    /* HDMI Encoder node */
-     digilent_hdmi {
-        compatible = "digilent,hdmi";
-        clocks = <&misc_clk_0>;
-        clock-names = "clk";
-        // digilent,edid-i2c = <&i2c0>; //去掉这个会卡住因为找不到i2c，但是对于硬件上I2C没有链接的开发板必须注释这一行
-        digilent,fmax = <150000>;
-        digilent,hmax = <1920>;
-        digilent,vmax = <1080>;
-        digilent,hpref = <1280>;
-        digilent,vpref = <720>;
-
-        ports {
-            #address-cells = <1>;
-            #size-cells = <0>;
-            
-            port@0 {
-                reg = <0>;
-                hdmi_ep: endpoint {
-                    remote-endpoint = <&pl_disp_ep>;
-                    hdmi,force-hot-plug= <1>; /* 强制跳过 EDID 也可用 */
-                };
-            };
-        };
-    };
-
-
-   	xlnx_pl_disp0 {
-		compatible = "xlnx,pl-disp";
-		device-id = <0xaa01>;
-		dmas = <&v_frmbuf_rd_0 0>; 	
-		dma-names = "dma0"; 
-		xlnx,vformat = "XR24";		//Rg24
-		xlnx,bridge = <&v_tc_0>; 
-		status = "okay";
-
-        ports {
-            #address-cells = <1>;
-            #size-cells = <0>;
-            
-            port@0 {
-                reg = <0>;
-                pl_disp_ep: endpoint {
-                    remote-endpoint = <&hdmi_ep>;
-                };
-            };
-        };
-
+	digilenthdmi: digilent_hdmi {
+		compatible = "digilent,hdmi";
+		clocks = <&misc_clk_0>;
+		clock-names = "clk";
+		digilent,fmax = <150000>;
+		digilent,hmax = <1920>;
+		digilent,vmax = <1080>;
+		digilent,hpref = <1280>;
+		digilent,vpref = <720>;
+		hdmi,force-hot-plug = <1>;
+		port@0 {
+			reg = <0>;
+			hdmi_ep: endpoint {
+				remote-endpoint = <&pl_disp_ep>;
+				hdmi,force-hot-plug = <1>;
+			};
+		};
 	};
+
+	xlnxpldisp: xlnx_pl_disp {
+		compatible = "xlnx,pl-disp";
+		dmas = <&v_frmbuf_rd_0 0>;
+		dma-names = "dma0";
+		xlnx,vformat = "RG24";
+		xlnx,bridge = <&v_tc_0>;
+		port@0 {
+			reg = <0>;
+			pl_disp_ep: endpoint {
+				remote-endpoint = <&hdmi_ep>;
+			};
+		};
+	};
+
 };
 
 &v_frmbuf_rd_0 {

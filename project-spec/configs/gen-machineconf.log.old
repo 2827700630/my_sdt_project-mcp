@@ -1,31 +1,31 @@
-2026-01-29 01:55:24,434 - [INFO] Getting Platform info from HW file
-2026-01-29 01:55:24,434 - [DEBUG] Using the soc_family specified by user:zynq
-2026-01-29 01:55:24,435 - [DEBUG] LOPPER_DTC_FLAGS="-b 0 -@" /home/xuebao/petalinux-2025.2/sysroots/x86_64-petalinux-linux/usr/bin/lopper -O /home/xuebao/my_sdt_project/project-spec/configs -f --enhanced   -i /home/xuebao/petalinux-2025.2/sysroots/x86_64-petalinux-linux/usr/lib/python3.12/site-packages/lopper/lops/lop-machine-name.dts /home/xuebao/my_sdt_project/project-spec/hw-description/system-top.dts 
-2026-01-29 01:55:25,833 - [DEBUG] 
+2026-01-29 04:46:55,100 - [INFO] Getting Platform info from HW file
+2026-01-29 04:46:55,100 - [DEBUG] Using the soc_family specified by user:zynq
+2026-01-29 04:46:55,102 - [DEBUG] LOPPER_DTC_FLAGS="-b 0 -@" /home/xuebao/petalinux-2025.2/sysroots/x86_64-petalinux-linux/usr/bin/lopper -O /home/xuebao/my_sdt_project/project-spec/configs -f --enhanced   -i /home/xuebao/petalinux-2025.2/sysroots/x86_64-petalinux-linux/usr/lib/python3.12/site-packages/lopper/lops/lop-machine-name.dts /home/xuebao/my_sdt_project/project-spec/hw-description/system-top.dts 
+2026-01-29 04:46:56,517 - [DEBUG] 
 xlnx-zynq-7000 7z010 Xilinx Zynq
 
 
 
-2026-01-29 01:55:25,835 - [DEBUG] LOPPER_DTC_FLAGS="-b 0 -@" /home/xuebao/petalinux-2025.2/sysroots/x86_64-petalinux-linux/usr/bin/lopper -O /home/xuebao/my_sdt_project/project-spec/configs -f --enhanced   -i /home/xuebao/petalinux-2025.2/sysroots/x86_64-petalinux-linux/usr/lib/python3.12/site-packages/lopper/lops/lop-xilinx-id-cpus.dts /home/xuebao/my_sdt_project/project-spec/hw-description/system-top.dts 
-2026-01-29 01:55:27,481 - [DEBUG] 
+2026-01-29 04:46:56,518 - [DEBUG] LOPPER_DTC_FLAGS="-b 0 -@" /home/xuebao/petalinux-2025.2/sysroots/x86_64-petalinux-linux/usr/bin/lopper -O /home/xuebao/my_sdt_project/project-spec/configs -f --enhanced   -i /home/xuebao/petalinux-2025.2/sysroots/x86_64-petalinux-linux/usr/lib/python3.12/site-packages/lopper/lops/lop-xilinx-id-cpus.dts /home/xuebao/my_sdt_project/project-spec/hw-description/system-top.dts 
+2026-01-29 04:46:58,170 - [DEBUG] 
 # global core_number no-domain cpu_name
 arm,cortex-a9 0 None ps7_cortexa9_0 None
 arm,cortex-a9 1 None ps7_cortexa9_1 None
 
 
 
-2026-01-29 01:55:27,498 - [DEBUG] Hardware Configuration:
-2026-01-29 01:55:27,498 - [DEBUG] MODEL       = "Xilinx Zynq"
-2026-01-29 01:55:27,498 - [DEBUG] MACHINE     = "xlnx-zynq-7000"
-2026-01-29 01:55:27,498 - [DEBUG] DEVICE_ID   = "7z010"
-2026-01-29 01:55:27,498 - [DEBUG] SOC_FAMILY  = "zynq"
-2026-01-29 01:55:27,498 - [DEBUG] SOC_VARIANT = ""
-2026-01-29 01:55:27,498 - [DEBUG] CPUs:
-2026-01-29 01:55:27,498 - [DEBUG] 	= ps7_cortexa9_0 arm cortex-a9 0
-2026-01-29 01:55:27,498 - [DEBUG] 	= ps7_cortexa9_1 arm cortex-a9 1
-2026-01-29 01:55:27,499 - [INFO] Silentconfig project
-2026-01-29 01:55:27,499 - [DEBUG] Running CMD: yes "" | env KCONFIG_CONFIG=/home/xuebao/my_sdt_project/project-spec/configs/config conf /home/xuebao/my_sdt_project/project-spec/configs/configs/Kconfig
-2026-01-29 01:55:27,509 - [DEBUG] *
+2026-01-29 04:46:58,186 - [DEBUG] Hardware Configuration:
+2026-01-29 04:46:58,186 - [DEBUG] MODEL       = "Xilinx Zynq"
+2026-01-29 04:46:58,186 - [DEBUG] MACHINE     = "xlnx-zynq-7000"
+2026-01-29 04:46:58,186 - [DEBUG] DEVICE_ID   = "7z010"
+2026-01-29 04:46:58,186 - [DEBUG] SOC_FAMILY  = "zynq"
+2026-01-29 04:46:58,186 - [DEBUG] SOC_VARIANT = ""
+2026-01-29 04:46:58,186 - [DEBUG] CPUs:
+2026-01-29 04:46:58,186 - [DEBUG] 	= ps7_cortexa9_0 arm cortex-a9 0
+2026-01-29 04:46:58,186 - [DEBUG] 	= ps7_cortexa9_1 arm cortex-a9 1
+2026-01-29 04:46:58,187 - [INFO] Silentconfig project
+2026-01-29 04:46:58,187 - [DEBUG] Running CMD: yes "" | env KCONFIG_CONFIG=/home/xuebao/my_sdt_project/project-spec/configs/config conf /home/xuebao/my_sdt_project/project-spec/configs/configs/Kconfig
+2026-01-29 04:46:58,197 - [DEBUG] *
 * PetaLinux System Configuration
 *
 ZYNQ Configuration (SYSTEM_ZYNQ) [Y/?] y
@@ -241,9 +241,9 @@ user layer 0 (USER_LAYER_0) []
 #
 # configuration written to /home/xuebao/my_sdt_project/project-spec/configs/config
 #
-2026-01-29 01:55:27,574 - [INFO] Silentconfig rootfs
-2026-01-29 01:55:27,574 - [DEBUG] Running CMD: yes "" | env KCONFIG_CONFIG=/home/xuebao/my_sdt_project/project-spec/configs/rootfs_config conf /home/xuebao/my_sdt_project/project-spec/configs/rootfsconfigs/Kconfig
-2026-01-29 01:55:27,594 - [DEBUG] *
+2026-01-29 04:46:58,250 - [INFO] Silentconfig rootfs
+2026-01-29 04:46:58,250 - [DEBUG] Running CMD: yes "" | env KCONFIG_CONFIG=/home/xuebao/my_sdt_project/project-spec/configs/rootfs_config conf /home/xuebao/my_sdt_project/project-spec/configs/rootfsconfigs/Kconfig
+2026-01-29 04:46:58,265 - [DEBUG] *
 * Configuration
 *
 *
@@ -3532,6 +3532,7 @@ choice[1-2]: *
 * user packages 
 *
 clk-dglnt-dynclk (clk-dglnt-dynclk) [Y/n/?] 
+digilent-hdmi (digilent-hdmi) [Y/n/?] 
 gpio-demo (gpio-demo) [N/y/?] 
 peekpoke (peekpoke) [N/y/?] 
 rehsd-hdmi (rehsd-hdmi) [Y/n/?] 
@@ -3545,5 +3546,5 @@ Add Users to Sudo users (ADD_USERS_TO_SUDOERS) [petalinux]
 #
 # configuration written to /home/xuebao/my_sdt_project/project-spec/configs/rootfs_config
 #
-2026-01-29 01:55:27,606 - [INFO] Generating configuration files
-2026-01-29 01:55:27,624 - [DEBUG] Shutting down bitbake
+2026-01-29 04:46:58,273 - [INFO] Generating configuration files
+2026-01-29 04:46:58,295 - [DEBUG] Shutting down bitbake

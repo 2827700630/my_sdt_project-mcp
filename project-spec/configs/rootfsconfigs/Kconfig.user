@@ -3,6 +3,10 @@ config clk-dglnt-dynclk
 	 bool "clk-dglnt-dynclk"
 	 help
 	
+config digilent-hdmi  
+	 bool "digilent-hdmi"
+	 help
+	
 config gpio-demo  
 	 bool "gpio-demo"
 	 help

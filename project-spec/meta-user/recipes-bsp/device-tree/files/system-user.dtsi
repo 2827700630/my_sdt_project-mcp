@@ -23,24 +23,31 @@
 
 &amba_pl {
     /* HDMI Encoder node */
-    rehsd_hdmi: rehsd_hdmi {
-        compatible = "rehsd,hdmi", "xlnx,v-hdmi-tx-ss-1.0";
-		// compatible = "rehsd,hdmi";
+     digilent_hdmi {
+        compatible = "digilent,hdmi";
         clocks = <&misc_clk_0>;
-		clk = "misc_clk_0";
         clock-names = "clk";
-        status = "okay";
+        // digilent,edid-i2c = <&i2c0>; //去掉这个会卡住因为找不到i2c，但是对于硬件上I2C没有链接的开发板必须注释这一行
+        digilent,fmax = <150000>;
+        digilent,hmax = <1920>;
+        digilent,vmax = <1080>;
+        digilent,hpref = <1280>;
+        digilent,vpref = <720>;
 
-        // rehsd,edid-i2c = <&i2c0>;
-
-		port@0 { 
-            // reg = <0>;
-			hdmi_ep0: endpoint { 
-				remote-endpoint = <&pl_disp0_ep>; 
-				hdmi,force-hot-plug = <1>;
-			}; 
-		}; 
+        ports {
+            #address-cells = <1>;
+            #size-cells = <0>;
+            
+            port@0 {
+                reg = <0>;
+                hdmi_ep: endpoint {
+                    remote-endpoint = <&pl_disp_ep>;
+                    hdmi,force-hot-plug= <1>; /* 强制跳过 EDID 也可用 */
+                };
+            };
+        };
     };
+
 
    	xlnx_pl_disp0 {
 		compatible = "xlnx,pl-disp";
@@ -51,12 +58,18 @@
 		xlnx,bridge = <&v_tc_0>; 
 		status = "okay";
 
-		port@0 { 
-            // reg = <0>;
-			pl_disp0_ep: endpoint { 
-				remote-endpoint = <&hdmi_ep0>; 
-			}; 
-		};
+        ports {
+            #address-cells = <1>;
+            #size-cells = <0>;
+            
+            port@0 {
+                reg = <0>;
+                pl_disp_ep: endpoint {
+                    remote-endpoint = <&hdmi_ep>;
+                };
+            };
+        };
+
 	};
 };
 

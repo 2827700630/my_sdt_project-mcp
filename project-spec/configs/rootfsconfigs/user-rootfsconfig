@@ -5,3 +5,4 @@ CONFIG_gpio-demo
 CONFIG_peekpoke
 CONFIG_rehsd-hdmi
 CONFIG_clk-dglnt-dynclk
+CONFIG_digilent-hdmi

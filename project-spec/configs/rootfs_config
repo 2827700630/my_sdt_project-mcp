@@ -3773,6 +3773,7 @@ CONFIG_Init-manager-systemd=y
 # user packages 
 #
 CONFIG_clk-dglnt-dynclk=y
+CONFIG_digilent-hdmi=y
 # CONFIG_gpio-demo is not set
 # CONFIG_peekpoke is not set
 CONFIG_rehsd-hdmi=y
@@ -3784,4 +3785,3 @@ CONFIG_ADD_EXTRA_USERS="root:root;petalinux::passwd-expire;"
 CONFIG_CREATE_NEW_GROUPS="aie;"
 CONFIG_ADD_USERS_TO_GROUPS="petalinux:audio,video,aie,input;"
 CONFIG_ADD_USERS_TO_SUDOERS="petalinux"
-CONFIG_digilent-hdmi=y

@@ -12,7 +12,6 @@
 
 			framebuffer0: framebuffer0@20000000 {
 				reg = <0x20000000 0x00800000>; // 8 MB for framebuffer
-				no-map;
 			};
         };
 
@@ -26,7 +25,9 @@
     /* HDMI Encoder node */
     rehsd_hdmi: rehsd_hdmi {
         compatible = "rehsd,hdmi", "xlnx,v-hdmi-tx-ss-1.0";
+		// compatible = "rehsd,hdmi";
         clocks = <&misc_clk_0>;
+		clk = "misc_clk_0";
         clock-names = "clk";
         status = "okay";
 
@@ -46,7 +47,7 @@
 		device-id = <0xaa01>;
 		dmas = <&v_frmbuf_rd_0 0>; 	
 		dma-names = "dma0"; 
-		xlnx,vformat = "RG24";		//Rg24
+		xlnx,vformat = "XR24";		//Rg24
 		xlnx,bridge = <&v_tc_0>; 
 		status = "okay";
 
@@ -60,16 +61,16 @@
 };
 
 &v_frmbuf_rd_0 {
-	// #dma-cells = <1>;
+	#dma-cells = <1>;
 	memory-region = <&framebuffer0>;
 	clock-names = "ap_clk";
 	clocks = <&clkc 15>;
 	compatible = "xlnx,v-frmbuf-rd-v3.0", "xlnx,axi-frmbuf-rd-v2.2";
 	reg = <0x43c10000 0x10000>;      // Base address and size
     reset-gpios = <&gpio0 54 1>;
-	// gpio-names = "reset";		//"reset"
-	// interrupt-names = "interrupt";
-	// interrupt-parent = <&intc>;
+	gpio-names = "reset";		//"reset"
+	interrupt-names = "interrupt";
+	interrupt-parent = <&intc>;
 	interrupts = <0 29 4>;          // Interrupts configuration
 	xlnx,dma-align = <8>;
 	xlnx,dma-addr-width = <32>;     // Width of the DMA address
@@ -80,6 +81,7 @@
 	status = "okay";                // Enable the node
 };
 
+/*
 &v_tc_0 {
     compatible = "xlnx,bridge-v-tc-6.1";
     reg = <0x43c20000 0x10000>;
@@ -89,10 +91,20 @@
     xlnx,arbitrary-res-en;  // 可选，启用任意分辨率
     status = "okay";
 };
+*/
 
+&v_tc_0 {
+	compatible = "xlnx,v-tc-6.2" , "xlnx,v-tc-6.1" , "xlnx,bridge-v-tc-6.1";
+	xlnx,pixels-per-clock = <1>; 
+	reg = <0x43c20000 0x10000>;
+	status = "okay";
+};
+
+/*
 &clkc {
     fclk-enable = <0x1>;
 };
+*/
 
 &clk_wiz_0 {
     compatible = "xlnx,clocking-wizard-v6.0", "xlnx,clocking-wizard";

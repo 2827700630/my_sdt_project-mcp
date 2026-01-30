@@ -24,7 +24,7 @@
 
 &amba_pl {
 	digilenthdmi: digilent_hdmi {
-		compatible = "digilent,hdmi";
+		compatible = "digilent,hdmi", "xlnx,v-hdmi-tx-ss-1.0";
 		clocks = <&misc_clk_0>;
 		clock-names = "clk";
 		digilent,fmax = <150000>;

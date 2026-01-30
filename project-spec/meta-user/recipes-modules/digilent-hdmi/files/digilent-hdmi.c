@@ -49,8 +49,11 @@ static int digilent_hdmi_get_modes(struct drm_connector *connector)
     struct edid *edid;
     int count = 0;
 
+    dev_info(hdmi->dev, "Getting modes for HDMI connector\n");
+
     if (hdmi->i2c_bus)
     {
+        dev_info(hdmi->dev, "Using I2C for EDID\n");
         edid = drm_get_edid(connector, hdmi->i2c_bus);
         if (!edid)
         {
@@ -61,11 +64,14 @@ static int digilent_hdmi_get_modes(struct drm_connector *connector)
         drm_connector_update_edid_property(connector, edid);
         count = drm_add_edid_modes(connector, edid);
         kfree(edid);
+        dev_info(hdmi->dev, "Added %d EDID modes\n", count);
     }
     else
     {
+        dev_info(hdmi->dev, "No I2C, using no-EDID modes: hmax=%u, vmax=%u\n", hdmi->hmax, hdmi->vmax);
         count = drm_add_modes_noedid(connector, hdmi->hmax, hdmi->vmax);
         drm_set_preferred_mode(connector, hdmi->hpref, hdmi->vpref);
+        dev_info(hdmi->dev, "Set preferred mode: %ux%u, added %d modes\n", hdmi->hpref, hdmi->vpref, count);
     }
 
     return count;
@@ -107,15 +113,26 @@ static enum drm_connector_status digilent_hdmi_detect(struct drm_connector *conn
 {
     struct digilent_hdmi *hdmi = connector_to_hdmi(connector);
     struct device_node *node = hdmi->dev->of_node;
+    enum drm_connector_status status;
+
+    dev_info(hdmi->dev, "Detecting HDMI connector, force=%d\n", force);
 
     // 检查设备树属性，强制连接
     if (of_property_read_bool(node, "hdmi,force-hot-plug"))
+    {
+        dev_info(hdmi->dev, "Force hot-plug enabled, status=connected\n");
         return connector_status_connected;
+    }
 
     if (!hdmi->i2c_bus)
+    {
+        dev_info(hdmi->dev, "No I2C bus, status=unknown\n");
         return connector_status_unknown;
+    }
 
-    return drm_probe_ddc(hdmi->i2c_bus) ? connector_status_connected : connector_status_disconnected;
+    status = drm_probe_ddc(hdmi->i2c_bus) ? connector_status_connected : connector_status_disconnected;
+    dev_info(hdmi->dev, "I2C probe result: status=%s\n", status == connector_status_connected ? "connected" : "disconnected");
+    return status;
 }
 
 static void digilent_hdmi_connector_destroy(struct drm_connector *connector)
@@ -164,8 +181,11 @@ static void digilent_hdmi_atomic_mode_set(struct drm_encoder *encoder,
 {
     struct digilent_hdmi *hdmi = encoder_to_hdmi(encoder);
     struct drm_display_mode *m = &crtc_state->adjusted_mode;
+    unsigned long rate = m->clock * 1000;
 
-    clk_set_rate(hdmi->clk, m->clock * 1000);
+    dev_info(hdmi->dev, "Setting mode: %ux%u @ %u Hz, setting clock to %lu Hz\n",
+             m->hdisplay, m->vdisplay, drm_mode_vrefresh(m), rate);
+    clk_set_rate(hdmi->clk, rate);
 }
 
 static void digilent_hdmi_enable(struct drm_encoder *encoder)
@@ -173,8 +193,12 @@ static void digilent_hdmi_enable(struct drm_encoder *encoder)
     struct digilent_hdmi *hdmi = encoder_to_hdmi(encoder);
 
     if (hdmi->clk_enabled)
+    {
+        dev_info(hdmi->dev, "Clock already enabled\n");
         return;
+    }
 
+    dev_info(hdmi->dev, "Enabling HDMI clock\n");
     clk_prepare_enable(hdmi->clk);
     hdmi->clk_enabled = true;
 }
@@ -184,8 +208,12 @@ static void digilent_hdmi_disable(struct drm_encoder *encoder)
     struct digilent_hdmi *hdmi = encoder_to_hdmi(encoder);
 
     if (!hdmi->clk_enabled)
+    {
+        dev_info(hdmi->dev, "Clock already disabled\n");
         return;
+    }
 
+    dev_info(hdmi->dev, "Disabling HDMI clock\n");
     clk_disable_unprepare(hdmi->clk);
     hdmi->clk_enabled = false;
 }
@@ -225,6 +253,7 @@ static int digilent_hdmi_bind(struct device *dev, struct device *master,
     struct digilent_hdmi *hdmi = dev_get_drvdata(dev);
     int ret;
 
+    dev_info(dev, "Binding HDMI to DRM\n");
     hdmi->drm_dev = data;
 
     ret = digilent_hdmi_create_encoder(hdmi);
@@ -233,6 +262,7 @@ static int digilent_hdmi_bind(struct device *dev, struct device *master,
         dev_err(dev, "failed to create encoder: %d\n", ret);
         goto encoder_create_fail;
     }
+    dev_info(dev, "Encoder created successfully\n");
 
     ret = digilent_hdmi_create_connector(hdmi);
     if (ret)
@@ -240,6 +270,7 @@ static int digilent_hdmi_bind(struct device *dev, struct device *master,
         dev_err(dev, "failed to create connector: %d\n", ret);
         goto hdmi_create_fail;
     }
+    dev_info(dev, "Connector created successfully\n");
 
     return 0;
 
@@ -294,10 +325,11 @@ static int digilent_hdmi_parse_dt(struct digilent_hdmi *hdmi)
             dev_err(dev, "failed to get edid i2c adapter: %d\n", ret);
             return ret;
         }
+        dev_info(dev, "I2C bus found for EDID\n");
     }
     else
     {
-        dev_info(dev, "failed to find edid i2c property\n");
+        dev_info(dev, "No I2C property found, will use force-hot-plug or no-EDID modes\n");
     }
 
     ret = of_property_read_u32(node, "digilent,fmax", &hdmi->fmax);
@@ -329,6 +361,8 @@ static int digilent_hdmi_probe(struct platform_device *pdev)
     struct digilent_hdmi *hdmi;
     int ret;
 
+    dev_info(dev, "Probing Digilent HDMI driver\n");
+
     hdmi = devm_kzalloc(dev, sizeof(*hdmi), GFP_KERNEL);
     if (!hdmi)
     {
@@ -355,6 +389,7 @@ static int digilent_hdmi_probe(struct platform_device *pdev)
         return ret;
     }
 
+    dev_info(dev, "HDMI probe successful\n");
     return 0;
 }
 
